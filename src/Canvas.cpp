@@ -5,13 +5,15 @@ Canvas::Canvas(uint32_t width, uint32_t height)
 {
   this->width = width;
   this->height = height;
-  this->canvas.resize(width, std::vector<char>(height,0));
+
+  Color c; // empty color
+  this->canvas.resize(width, std::vector<Color>(height,c));
 }
 
-void Canvas::drawTriangle(float t)
+void Canvas::drawTriangle(const Triangle& t)
 {
 }
 
-void Canvas::save(std::string path)
+void Canvas::save(const std::string& path)
 {
 }
