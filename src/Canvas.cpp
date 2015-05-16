@@ -1,4 +1,5 @@
 #include "Canvas.h"
+#include "lodepng.h"
 
 Canvas::Canvas(uint32_t width, uint32_t height)
 {
