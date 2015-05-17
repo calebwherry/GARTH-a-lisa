@@ -1,0 +1,82 @@
+[section:getting_started Getting Started]
+
+[section Downloading]
+
+Boost.Compute is not yet an offical Boost library and therefore is not
+packaged with the standard Boost distribution. To download the library use the
+following command:
+
+[endsect]
+
+``
+git clone git://github.com/kylelutz/compute.git
+``
+
+[section Compilation and Usage]
+
+Boost.Compute is a header-only library, so no linking is required. To use the
+library just add the include directory to the compilation flags and link with
+the system's OpenCL library. For example, with GCC:
+
+``
+g++ -I/path/to/compute/include main.cpp -lOpenCL
+``
+
+All of the Boost.Compute headers can be included with the following directive:
+
+``
+#include <boost/compute.hpp>
+``
+
+If you only want to include the core OpenCL wrapper headers (which have minimal
+dependencies on the rest of Boost), use the following directive:
+
+``
+#include <boost/compute/core.hpp>
+``
+
+All of the classes and functions in Boost.Compute live in the `boost::compute`
+namespace and can be brought into global scope with:
+
+``
+using namespace boost::compute;
+``
+
+[endsect]
+
+[section Installation]
+
+Boost.Compute can also be installed system-wide. After compiling, run the
+following command to install the Boost.Compute headers. By default, they will
+be installed under `/usr/local/include`.
+
+[pre
+make install
+]
+
+After installing, Boost.Compute can be used through cmake by adding the following
+to your `CMakeLists.txt`:
+
+[pre
+find_package(BoostCompute REQUIRED)
+include_directories(${BoostCompute_INCLUDE_DIRS})
+]
+
+Ensure you also find and setup the OpenCL libraries for your system.
+
+[endsect] [/ installation]
+
+[section Support]
+
+Bugs and issues can be reported to the
+[@https://github.com/kylelutz/compute/issues?state=open issue tracker].
+
+There is also a mailing list for users and developers at
+[@https://groups.google.com/forum/#!forum/boost-compute].
+
+Look through the [link boost_compute.faq FAQ] to see if you're encountering a
+known or common issue.
+
+[endsect] [/ support]
+
+[endsect]
