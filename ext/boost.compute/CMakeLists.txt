@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 
 project(BoostCompute)
 
@@ -70,6 +70,10 @@ option(BOOST_COMPUTE_BUILD_EXAMPLES "Build the Boost.Compute examples" OFF)
 if(${BOOST_COMPUTE_BUILD_EXAMPLES})
   add_subdirectory(example)
 endif()
+
+# Create interface library target:
+add_library(Boost.Compute INTERFACE)
+target_include_directories(Boost.Compute INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 # configure cmake config file
 configure_file(

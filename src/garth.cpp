@@ -1,4 +1,5 @@
 #include "ClDevice.h"
+#include "boost/compute.hpp"
 
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
