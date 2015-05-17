@@ -12,6 +12,7 @@ Canvas::Canvas(uint32_t width, uint32_t height)
 
 void Canvas::drawTriangle(const Triangle& t)
 {
+  
 }
 
 void Canvas::save(const std::string& path)
