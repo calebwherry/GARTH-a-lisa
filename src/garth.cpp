@@ -1,12 +1,14 @@
+#define BOOST_COMPUTE_DEBUG_KERNEL_COMPILATION
 #include "boost/compute.hpp"
+
+#include "Canvas.h"
+#include "Triangle.h"
 #include "draw_triangle.h"
 
 #include <vector>
 #include <iostream>
-#include <exception>
-#include <stdexcept>
-#include <unordered_map>
 #include <string>
+#include <exception>
 
 using namespace std;
 namespace bc = boost::compute;
@@ -18,58 +20,84 @@ int main(int argc, char** argv)
   bc::device device = bc::system::default_device();
   bc::context context(device);
   bc::command_queue queue(context, device);
-  bc::kernel kernel = make_kernel(context, garth_kernels::draw_triangle, "draw_triangle");
+  bc::kernel kernel;
 
-  cout << "Preferred device: " << device.name() << endl;
+  try
+  {
+    kernel = make_kernel(context, garth_kernels::draw_triangles.c_str(), "draw_triangles");
+  }
+  catch (bc::opencl_error& ex)
+  {
+    cout << "Boost.Compute error: " << ex.error_string() << endl;
+    cout << "Boost.Compute error_code: " << ex.error_code() << endl;
+    return 1;
+  }
+  catch (exception& ex)
+  {
+    cout << "WTF HAPPENED?!?!~?! - " << ex.what() << endl;
+    return 1;
+  }
 
-  // setup input arrays
-  float a[] = { 10, 0, 30, -4 };
-  float b[] = { 5, 0, 7, 8 };
+  cout << "Default device: " << device.name() << endl;
 
-  // make space for the output
-  float c[] = { 0, 10, 0, 0 };
+  // Settings:
+  uint32_t num_triangles = 10,
+           canvas_width = 100,
+           canvas_height = 100;
 
-  // create memory buffers for the input and output
-  bc::buffer buffer_a(context, 4 * sizeof(float));
-  bc::buffer buffer_b(context, 4 * sizeof(float));
-  bc::buffer buffer_c(context, 4 * sizeof(float));
+  // Create RNG
+  std::default_random_engine rng;
+  std::uniform_int_distribution<uint8_t> random_color(0,255);
+  
+  // Create Triangle buffer:
+  vector<Triangle> triangles(num_triangles);
+  for(auto& t : triangles)
+  {
+    t.c.Red = random_color(rng);
+    t.c.Green = random_color(rng);
+    t.c.Blue = random_color(rng);
+  }
+  Canvas canvas(canvas_width, canvas_height);
 
-  // set the kernel arguments
-  kernel.set_arg(0, buffer_a);
-  kernel.set_arg(1, buffer_b);
-  kernel.set_arg(2, buffer_c);
+  // Create memory buffers for the input and output:
+  bc::buffer buffer_triangles(context, sizeof(triangles));
+  bc::buffer buffer_canvas(context, sizeof(canvas));
 
-  // write the data from 'a' and 'b' to the device
-  queue.enqueue_write_buffer(buffer_a, 0, 4 * sizeof(float), a);
-  queue.enqueue_write_buffer(buffer_b, 0, 4 * sizeof(float), b);
+  // Set the kernel arguments:
+  kernel.set_arg(0, buffer_triangles);
+  kernel.set_arg(1, num_triangles);
+  kernel.set_arg(2, buffer_canvas);
+  kernel.set_arg(3, canvas_width);
+  kernel.set_arg(4, canvas_height);
+  
 
-  // run the add kernel
-  queue.enqueue_1d_range_kernel(kernel, 0, 4, 0).wait();
+  // Write the data to the device:
+  queue.enqueue_write_buffer(buffer_triangles, 0, sizeof(triangles.data()), triangles.data());
+  queue.enqueue_write_buffer(buffer_canvas, 0, sizeof(canvas.getCanvas().data()), canvas.getCanvas().data());
 
+  // Calculate local/global group sizes:
+  bc::extents<2> offsetRange(0);
+  bc::extents<2> globalRange = { 10, 10 };
+  bc::extents<2> localRange = { 10, 10 };
 
-  // transfer results back to the host array 'c'
-  queue.enqueue_read_buffer(buffer_c, 0, 4 * sizeof(float), c);
+  // Run kernel:
+  queue.enqueue_nd_range_kernel(kernel, offsetRange, globalRange, localRange);
 
-  queue.finish();
+  // transfer results back to the host
+  queue.enqueue_read_buffer(buffer_canvas, 0, sizeof(canvas.getCanvas().data()), canvas.getCanvas().data());
 
-  // print out results in 'c'
-  std::cout << "c: [" << c[0] << ", "
-                      << c[1] << ", "
-                      << c[2] << ", "
-                      << c[3] << "]" << std::endl;
-
+  canvas.save("triangles.png");
   return 0;
 }
 
 bc::kernel make_kernel(const bc::context& context, const char* source, std::string name)
 {
-
     // setup compilation flags for the program
-    std::stringstream options;
+    std::string options;
 
     // create and build the program
     bc::program program =
-        bc::program::build_with_source(source, context, options.str());
+        bc::program::build_with_source(source, context, options.c_str());
 
     // create and return the kernel
     return program.create_kernel(name);

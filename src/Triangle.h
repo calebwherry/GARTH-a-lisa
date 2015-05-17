@@ -1,28 +1,19 @@
-#include <array>
-#include <utility>
+#ifndef TRIANGLE_H
+#define TRIANGLE_H
 
+#include "boost/compute.hpp"
+#include "Point.h"
 #include "Color.h"
 
-template <class T>
-using ThreePoints = std::array<std::pair<T, T>, 3>;
-
-class Triangle 
+struct Triangle 
 {
-  public:
-    Triangle();
+  Point p;
+  Point q;
+  Point r;
 
-    Triangle(
-      Color c,
-      ThreePoints<uint32_t> verts
-    );
-
-    Color const& getColor();
-    void setColor(Color c);
-
-    ThreePoints<uint32_t> const& getVertices();
-    void setVertices(ThreePoints<uint32_t> verts);
-
-  private:
-    Color color;
-    ThreePoints<uint32_t> vertices;
+  Color c;
 };
+
+BOOST_COMPUTE_ADAPT_STRUCT(Triangle, Triangle, (p, q, r, c));
+
+#endif
