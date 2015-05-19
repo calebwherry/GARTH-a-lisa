@@ -46,9 +46,6 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "Shared libs: ${BUILD_SHARED_LIBS}")
 
 
-# Find OpenCL
-find_package(OpenCL REQUIRED)
-
 #
 # Add local module path:
 #
