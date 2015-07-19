@@ -27,8 +27,9 @@
 *.out
 *.app
 
-# Build folder:
+# Build folders:
 build/
+cmake_build/
 
 # Vim swap files
 *.swp

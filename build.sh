@@ -1,7 +1,8 @@
 #!/bin/bash
-rm -rf build/
-mkdir build
-cd build/
+rm -rf cmake_build/
+mkdir cmake_build
+cd cmake_build/
 cmake ..
 make VERBOSE=1
 cd ..
+./cmake_build/src/garth
