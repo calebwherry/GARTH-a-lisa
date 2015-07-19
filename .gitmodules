@@ -1,0 +1,3 @@
+[submodule "ext/boost.compute"]
+	path = ext/boost.compute
+	url = https://github.com/Korovasoft/compute.git
