@@ -77,8 +77,13 @@ int main(int argc, char** argv)
 
   // Calculate local/global group sizes:
   bc::extents<2> offsetRange(0);
-  bc::extents<2> globalRange = { 10, 10 };
-  bc::extents<2> localRange = { 10, 10 };
+  bc::extents<2> globalRange;
+  globalRange[0] = 10;
+  globalRange[1] = 10;
+
+  bc::extents<2> localRange;
+  localRange[0] = 10;
+  localRange[1] = 10;
 
   // Run kernel:
   queue.enqueue_nd_range_kernel(kernel, offsetRange, globalRange, localRange);
