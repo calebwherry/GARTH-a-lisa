@@ -25,7 +25,8 @@ env:
   - CC="clang-3.5" CXX="clang++-3.5"
 
 script:
-  - ./build.sh
+  - ./build.py
+  - ./build/src/garth
 
 after_success:
   - cp ./triangles.png ./shippable/
