@@ -26,7 +26,7 @@ env:
 
 script:
   - ./build.py
-  - ./build/src/garth
+  - ./build/build-files/src/garth
 
 after_success:
   - cp ./triangles.png ./shippable/
