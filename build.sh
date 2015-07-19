@@ -6,3 +6,4 @@ cmake ..
 make VERBOSE=1
 cd ..
 ./cmake_build/src/garth
+exit 0
