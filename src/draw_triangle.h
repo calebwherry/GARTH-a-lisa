@@ -18,7 +18,7 @@ namespace garth_kernels
                              bc::type_definition<Triangle>() + "\n" +
                              bc::type_definition<Line>() + "\n";
 
-  // Add kernel source:
+  // draw_triangles kernel:
   std::string draw_triangles = 
     custom_types +
     BOOST_COMPUTE_STRINGIZE_SOURCE(
@@ -29,8 +29,9 @@ namespace garth_kernels
         const uint canvas_width,
         const uint canvas_height)
       {
-        const uint i = get_local_size(0) * get_global_id(0) + get_local_id(0);
-        const uint j = get_local_size(1) * get_global_id(1) + get_local_id(1);
+
+        const uint i = get_global_id(0);
+        const uint j = get_global_id(1);
         if ( (i < canvas_width) && (j < canvas_height) ) 
         {
           uint triangleCount;
@@ -107,4 +108,27 @@ namespace garth_kernels
       }
     );
 
+
+  // Color pixel kernel:
+  std::string draw_gradient = 
+    custom_types +
+    BOOST_COMPUTE_STRINGIZE_SOURCE(
+      __kernel void draw_gradient(
+        __global Color *canvas,
+        const uint canvas_width,
+        const uint canvas_height)
+      {
+        const uint i = get_global_id(0);
+        const uint j = get_global_id(1);
+
+        if ( (i < canvas_width) && (j < canvas_height) ) 
+        {
+          Color c;
+          c.Red = i;
+          c.Green = 0;
+          c.Blue = j;
+          canvas[i*canvas_width + j] = c;
+        }
+      }
+    );
 }

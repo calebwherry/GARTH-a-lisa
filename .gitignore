@@ -34,5 +34,5 @@ cmake_build/
 # Vim swap files
 *.swp
 
-# Awesome fractals
-triangles.png
+# Images
+*.png

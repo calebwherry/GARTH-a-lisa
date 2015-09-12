@@ -14,14 +14,48 @@ using namespace std;
 namespace bc = boost::compute;
 
 bc::kernel make_kernel(const bc::context& ctx, const char* source, std::string name);
+void drawTriangles(bc::context& ctx, bc::command_queue& queue);
+void drawGradient(bc::context& ctx, bc::command_queue& queue);
 
 int main(int argc, char** argv)
 {
-  bc::device device = bc::system::default_device();
-  bc::context context(device);
-  bc::command_queue queue(context, device);
-  bc::kernel kernel;
+  // Display all available devices:
+  cout << "Available devices:" << endl;
+  for (const auto& availableDevice : bc::system::devices())
+  {
+    cout << availableDevice.name() << " (" << availableDevice.vendor() << ")" << endl;
+  }
 
+  // Use default device for now:
+  bc::device device = bc::system::default_device();
+  cout << endl << "Default device: " << device.name() << endl;
+  bc::context context(device);
+  bc::command_queue queue(context, device); 
+
+  // Run different experiments:
+  drawTriangles(context, queue);
+  drawGradient(context, queue);
+
+  return 0;
+}
+
+bc::kernel make_kernel(const bc::context& context, const char* source, std::string name)
+{
+    // setup compilation flags for the program
+    std::string options;
+
+    // create and build the program
+    bc::program program =
+        bc::program::build_with_source(source, context, options.c_str());
+
+    // create and return the kernel
+    return program.create_kernel(name);
+}
+
+// Draw triangles:
+void drawTriangles(bc::context& context, bc::command_queue& queue)
+{
+  bc::kernel kernel;
   try
   {
     kernel = make_kernel(context, garth_kernels::draw_triangles.c_str(), "draw_triangles");
@@ -30,15 +64,13 @@ int main(int argc, char** argv)
   {
     cout << "Boost.Compute error: " << ex.error_string() << endl;
     cout << "Boost.Compute error_code: " << ex.error_code() << endl;
-    return 1;
+    return;
   }
   catch (exception& ex)
   {
     cout << "WTF HAPPENED?!?!~?! - " << ex.what() << endl;
-    return 1;
+    return;
   }
-
-  cout << "Default device: " << device.name() << endl;
 
   // Settings:
   uint32_t num_triangles = 10,
@@ -60,26 +92,25 @@ int main(int argc, char** argv)
   Canvas canvas(canvas_width, canvas_height);
 
   // Create memory buffers for the input and output:
-  bc::buffer buffer_triangles(context, sizeof(triangles));
-  bc::buffer buffer_canvas(context, sizeof(canvas));
+  bc::buffer buffer_triangles(context, triangles.size() * sizeof(Triangle));
+  bc::buffer buffer_canvas(context, canvas.getCanvas().size() * sizeof(Color));
 
   // Set the kernel arguments:
   kernel.set_arg(0, buffer_triangles);
   kernel.set_arg(1, num_triangles);
   kernel.set_arg(2, buffer_canvas);
   kernel.set_arg(3, canvas_width);
-  kernel.set_arg(4, canvas_height);
-  
+  kernel.set_arg(4, canvas_height);  
 
   // Write the data to the device:
-  queue.enqueue_write_buffer(buffer_triangles, 0, sizeof(triangles.data()), triangles.data());
-  queue.enqueue_write_buffer(buffer_canvas, 0, sizeof(canvas.getCanvas().data()), canvas.getCanvas().data());
+  queue.enqueue_write_buffer(buffer_triangles, 0, triangles.size() * sizeof(Triangle), triangles.data());
+  queue.enqueue_write_buffer(buffer_canvas, 0, canvas.getCanvas().size() * sizeof(Color), canvas.getCanvas().data());
 
   // Calculate local/global group sizes:
   bc::extents<2> offsetRange(0);
   bc::extents<2> globalRange;
-  globalRange[0] = 10;
-  globalRange[1] = 10;
+  globalRange[0] = canvas_width;
+  globalRange[1] = canvas_height;
 
   bc::extents<2> localRange;
   localRange[0] = 10;
@@ -89,21 +120,67 @@ int main(int argc, char** argv)
   queue.enqueue_nd_range_kernel(kernel, offsetRange, globalRange, localRange);
 
   // transfer results back to the host
-  queue.enqueue_read_buffer(buffer_canvas, 0, sizeof(canvas.getCanvas().data()), canvas.getCanvas().data());
+  queue.enqueue_read_buffer(buffer_canvas, 0, canvas.getCanvas().size() * sizeof(Color), canvas.getCanvas().data());
+
+  // Wait for queued tasks to finish
+  queue.finish();
 
   canvas.save("triangles.png");
-  return 0;
 }
 
-bc::kernel make_kernel(const bc::context& context, const char* source, std::string name)
-{
-    // setup compilation flags for the program
-    std::string options;
+// Draw gradient
+void drawGradient(bc::context& context, bc::command_queue& queue)
+{ 
+  bc::kernel kernel;
+  try
+  {
+    kernel = make_kernel(context, garth_kernels::draw_gradient.c_str(), "draw_gradient");
+  }
+  catch (bc::opencl_error& ex)
+  {
+    cout << "Boost.Compute error: " << ex.error_string() << endl;
+    cout << "Boost.Compute error_code: " << ex.error_code() << endl;
+    return; 
+  }
+  catch (exception& ex)
+  {
+    cout << "WTF HAPPENED?!?!~?! - " << ex.what() << endl;
+    return; 
+  }
 
-    // create and build the program
-    bc::program program =
-        bc::program::build_with_source(source, context, options.c_str());
+  uint32_t canvas_width = 100,
+           canvas_height = 100;
+  Canvas canvas(canvas_width, canvas_height);
 
-    // create and return the kernel
-    return program.create_kernel(name);
+  // Create memory buffers for the input and output:
+  bc::buffer buffer_canvas(context, canvas.getCanvas().size() * sizeof(Color));
+
+  // Set the kernel arguments:
+  kernel.set_arg(0, buffer_canvas);
+  kernel.set_arg(1, canvas_width);
+  kernel.set_arg(2, canvas_height);  
+
+  // Write the data to the device:
+  queue.enqueue_write_buffer(buffer_canvas, 0, canvas.getCanvas().size() * sizeof(Color), canvas.getCanvas().data());
+
+  // Calculate local/global group sizes:
+  bc::extents<2> offsetRange(0);
+  bc::extents<2> globalRange;
+  globalRange[0] = canvas_width;
+  globalRange[1] = canvas_height;
+
+  bc::extents<2> localRange;
+  localRange[0] = 10;
+  localRange[1] = 10;
+
+  // Run kernel:
+  queue.enqueue_nd_range_kernel(kernel, offsetRange, globalRange, localRange);
+
+  // transfer results back to the host
+  queue.enqueue_read_buffer(buffer_canvas, 0, canvas.getCanvas().size() * sizeof(Color), canvas.getCanvas().data());
+
+  // Wait for queued tasks to finish
+  queue.finish();
+
+  canvas.save("gradient.png");
 }
