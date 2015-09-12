@@ -3,7 +3,7 @@
 
 #include "Canvas.h"
 #include "Triangle.h"
-#include "draw_triangle.h"
+#include "kernels.h"
 
 #include <vector>
 #include <iostream>
@@ -82,13 +82,23 @@ void drawTriangles(bc::context& context, bc::command_queue& queue)
   std::uniform_int_distribution<uint8_t> random_color(0,255);
   
   // Create Triangle buffer:
-  vector<Triangle> triangles(num_triangles);
-  for(auto& t : triangles)
+  vector<Triangle> triangles(1);
+  triangles.begin()->c.Red = 255;
+  triangles.begin()->c.Green = 0;
+  triangles.begin()->c.Blue = 0;
+  triangles.begin()->p.x = 10;
+  triangles.begin()->p.y = 10;
+  triangles.begin()->q.x = 90;
+  triangles.begin()->q.y = 90;
+  triangles.begin()->r.x = 10;
+  triangles.begin()->r.y = 90;
+  
+  /*for(auto& t : triangles)
   {
     t.c.Red = random_color(rng);
     t.c.Green = random_color(rng);
     t.c.Blue = random_color(rng);
-  }
+  }*/
   Canvas canvas(canvas_width, canvas_height);
 
   // Create memory buffers for the input and output:
