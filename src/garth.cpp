@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 
   // Run different experiments:
   drawTriangles(context, queue);
-  drawGradient(context, queue);
+  //drawGradient(context, queue);
 
   return 0;
 }
@@ -106,7 +106,6 @@ void drawTriangles(bc::context& context, bc::command_queue& queue)
 
   // Set the kernel arguments:
   kernel.set_arg(0, buffer_triangles);
-  kernel.set_arg(1, num_triangles);
   kernel.set_arg(2, buffer_canvas);
   kernel.set_arg(3, canvas_width);
   kernel.set_arg(4, canvas_height);  
@@ -129,9 +128,7 @@ void drawTriangles(bc::context& context, bc::command_queue& queue)
   for(int triangle_id = 0; triangle_id < num_triangles; triangle_id++)
   {
     kernel.set_arg(1, triangle_id);
-    cout << "Lauching Kernel " << triangle_id << endl;
     queue.enqueue_nd_range_kernel(kernel, offsetRange, globalRange, localRange);
-    queue.finish();
   }
 
   // transfer results back to the host
