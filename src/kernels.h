@@ -30,7 +30,7 @@ namespace garth_kernels
 
       __kernel void draw_triangles(
         __global const Triangle *triangles,
-        const uint num_triangles,
+        const uint triangle_id,
         __global Color *canvas,
         const uint canvas_width,
         const uint canvas_height)
@@ -43,7 +43,7 @@ namespace garth_kernels
           uint triangleCount = 0;
           //for (triangleCount = 0; triangleCount < num_triangles; ++triangleCount)
           {
-            Triangle t = triangles[triangleCount];
+            Triangle t = triangles[triangle_id];
             Point p = {i,j};
             bool b1 = signFunc(p, t.p, t.q) < 0;
             bool b2 = signFunc(p, t.q, t.r) < 0;

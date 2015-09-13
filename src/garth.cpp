@@ -73,32 +73,31 @@ void drawTriangles(bc::context& context, bc::command_queue& queue)
   }
 
   // Settings:
-  uint32_t num_triangles = 10,
-           canvas_width = 100,
-           canvas_height = 100;
+  uint32_t num_triangles = 1000,
+           canvas_width = 1000,
+           canvas_height = canvas_width;
 
   // Create RNG
-  std::default_random_engine rng;
-  std::uniform_int_distribution<uint8_t> random_color(0,255);
+  std::random_device rd;
+  std::default_random_engine rng{ rd() };
+  std::uniform_int_distribution<uint8_t> random_color(0, 255);
+  std::uniform_int_distribution<int32_t> random_position(-(int32_t)canvas_width*0.1, (int32_t)canvas_width*1.1);
   
   // Create Triangle buffer:
-  vector<Triangle> triangles(1);
-  triangles.begin()->c.Red = 255;
-  triangles.begin()->c.Green = 0;
-  triangles.begin()->c.Blue = 0;
-  triangles.begin()->p.x = 10;
-  triangles.begin()->p.y = 10;
-  triangles.begin()->q.x = 90;
-  triangles.begin()->q.y = 90;
-  triangles.begin()->r.x = 10;
-  triangles.begin()->r.y = 90;
-  
-  /*for(auto& t : triangles)
+  vector<Triangle> triangles(num_triangles);
+  for(auto& t : triangles)
   {
     t.c.Red = random_color(rng);
     t.c.Green = random_color(rng);
     t.c.Blue = random_color(rng);
-  }*/
+    t.c.Alpha = random_color(rng);
+    t.p.x = random_position(rng);
+    t.p.y = random_position(rng);
+    t.q.x = random_position(rng);
+    t.q.y = random_position(rng);
+    t.r.x = random_position(rng);
+    t.r.y = random_position(rng);
+  }
   Canvas canvas(canvas_width, canvas_height);
 
   // Create memory buffers for the input and output:
@@ -123,11 +122,17 @@ void drawTriangles(bc::context& context, bc::command_queue& queue)
   globalRange[1] = canvas_height;
 
   bc::extents<2> localRange;
-  localRange[0] = 10;
-  localRange[1] = 10;
+  localRange[0] = 1;
+  localRange[1] = 1;
 
   // Run kernel:
-  queue.enqueue_nd_range_kernel(kernel, offsetRange, globalRange, localRange);
+  for(int triangle_id = 0; triangle_id < num_triangles; triangle_id++)
+  {
+    kernel.set_arg(1, triangle_id);
+    cout << "Lauching Kernel " << triangle_id << endl;
+    queue.enqueue_nd_range_kernel(kernel, offsetRange, globalRange, localRange);
+    queue.finish();
+  }
 
   // transfer results back to the host
   queue.enqueue_read_buffer(buffer_canvas, 0, canvas.getCanvas().size() * sizeof(Color), canvas.getCanvas().data());
