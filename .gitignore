@@ -36,3 +36,4 @@ cmake_build/
 
 # Images
 *.png
+!MonaLisa.png

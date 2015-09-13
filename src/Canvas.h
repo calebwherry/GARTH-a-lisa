@@ -1,8 +1,11 @@
-#include <string>
-#include <vector>
+#ifndef CANVAS_H
+#define CANVAS_H
 
 #include "Color.h"
 #include "Triangle.h"
+
+#include <string>
+#include <vector>
 
 class Canvas 
 {
@@ -10,11 +13,16 @@ class Canvas
     Canvas()=delete;
     Canvas(uint32_t width, uint32_t height);
 
-    void save(const std::string& file_name);
+    static Canvas open(const std::string& fileName);
+    void save(const std::string& fileName);
     std::vector<Color>& getCanvas();
+    uint32_t getWidth();
+    uint32_t getHeight();
 
   private:
     uint32_t width;
     uint32_t height;
     std::vector<Color> canvas;
 };
+
+#endif
