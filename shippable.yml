@@ -26,7 +26,16 @@ env:
 
 script:
   - ./build.py
-  - ./build/build-files/src/garth
+  - time ./build/build-files/src/garth
+  - time ./build/build-files/src/garth
+  - time ./build/build-files/src/garth
+  - time ./build/build-files/src/garth
+  - time ./build/build-files/src/garth
+  - time ./build/build-files/src/garth
+  - time ./build/build-files/src/garth
+  - time ./build/build-files/src/garth
+  - time ./build/build-files/src/garth
+  - time ./build/build-files/src/garth
 
 after_success:
   - cp ./triangles.png ./shippable/

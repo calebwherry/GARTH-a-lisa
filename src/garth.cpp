@@ -78,8 +78,8 @@ void drawTriangles(bc::context& context, bc::command_queue& queue)
            canvas_height = canvas_width;
 
   // Create RNG
-  std::random_device rd;
-  std::default_random_engine rng{ rd() };
+  // std::random_device rd;
+  std::default_random_engine rng;//{ rd() };
   std::uniform_int_distribution<uint8_t> random_color(0, 255);
   std::uniform_int_distribution<int32_t> random_position(-(int32_t)canvas_width*0.1, (int32_t)canvas_width*1.1);
   
