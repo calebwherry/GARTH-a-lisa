@@ -73,7 +73,7 @@ void drawTriangles(bc::context& context, bc::command_queue& queue)
   }
 
   // Settings:
-  uint32_t num_triangles = 1000,
+  uint32_t num_triangles = 10000,
            canvas_width = 1000,
            canvas_height = canvas_width;
 
@@ -122,8 +122,8 @@ void drawTriangles(bc::context& context, bc::command_queue& queue)
   globalRange[1] = canvas_height;
 
   bc::extents<2> localRange;
-  localRange[0] = 1;
-  localRange[1] = 1;
+  localRange[0] = 10;
+  localRange[1] = 10;
 
   // Run kernel:
   for(int triangle_id = 0; triangle_id < num_triangles; triangle_id++)

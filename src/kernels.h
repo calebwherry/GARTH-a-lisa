@@ -52,7 +52,7 @@ namespace garth_kernels
             if ((b1 == b2) && (b2 == b3))
             {
               float alpha = t.c.Alpha / 255.0;
-              Color c = canvas[i*canvas_width + j];
+              Color c = canvas[j*canvas_width + i];
               c.Red = alpha * t.c.Red + (1 - alpha)*c.Red;
               c.Green = alpha * t.c.Green + (1 - alpha)*c.Green;
               c.Blue = alpha * t.c.Blue + (1 - alpha)*c.Blue;
