@@ -29,8 +29,9 @@ Organism simulateSingleGeneration(const Organism& parentOrganism, DeviceObjects&
 int main(int argc, char** argv)
 {
   // Read in reference image:
-  string referenceImageFileName = "test.png";
+  string referenceImageFileName = "MonaLisa.png";
   Canvas referenceImage = Canvas::open(referenceImageFileName);
+  referenceImage.save("MonaLinda.png");
 
   // Display all available devices:
   cout << "Available devices:" << endl;
@@ -153,18 +154,20 @@ void drawTriangles(
   // Calculate local/global group sizes:
   bc::extents<2> offsetRange(0);
   bc::extents<2> globalRange;
-  globalRange[0] = simParams.canvasWidth;
-  globalRange[1] = simParams.canvasHeight;
+  globalRange[0] = 0;
+  globalRange[1] = 0;
 
   bc::extents<2> localRange;
-  localRange[0] = 10;
-  localRange[1] = 10;
+  localRange[0] = simParams.canvasWidth;
+  localRange[1] = simParams.canvasHeight;
 
   // Run kernel:
   for(uint32_t i = 0; i < triangles.size(); i++)
   {
     deviceObjects.kernel.set_arg(1, i);
-    deviceObjects.queue.enqueue_nd_range_kernel(deviceObjects.kernel, offsetRange, globalRange, localRange);
+    size_t origin[2] = { 0,0 };
+    size_t region[2] = {simParams.canvasWidth, simParams.canvasHeight };
+    deviceObjects.queue.enqueue_nd_range_kernel(deviceObjects.kernel, 2, origin, region, 0);
   }
 
   // transfer results back to the host
